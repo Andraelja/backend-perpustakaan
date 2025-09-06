@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar(255)
+  email     String   @unique(map: "email") @db.VarChar(255)
+  password  String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Buku {
+  id        Int      @id @default(autoincrement())
+  judul     String?  @db.VarChar(255)
+  penulis   String   @db.VarChar(255)
+  penerbit  String?  @db.VarChar(255)
+  tahun     Int?
+  kategori  String?  @db.VarChar(255)
+  stok      Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("buku")
+}
