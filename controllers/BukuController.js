@@ -13,6 +13,7 @@ const findBuku = async (req, res) => {
         tahun: true,
         kategori: true,
         stok: true,
+        status: true,
       },
       orderBy: {
         id: "desc",
@@ -39,9 +40,10 @@ const createBuku = async (req, res) => {
         judul: req.body.judul,
         penulis: req.body.penulis,
         penerbit: req.body.penerbit,
-        tahun: req.body.tahun ? Number(req.body.tahun) : null,
+        tahun: req.body.tahun ? new Date(req.body.tahun).getFullYear() : null,
         kategori: req.body.kategori,
         stok: req.body.stok ? Number(req.body.stok) : 0,
+        status: req.body.status || "tersedia",
       },
     });
 
@@ -101,7 +103,7 @@ const updateBuku = async (req, res) => {
         judul: req.body.judul,
         penulis: req.body.penulis,
         penerbit: req.body.penerbit,
-        tahun: req.body.tahun ? Number(req.body.tahun) : null,
+        tahun: req.body.tahun ? new Date(req.body.tahun).getFullYear() : null,
         kategori: req.body.kategori,
         stok: req.body.stok ? Number(req.body.stok) : 0,
       },

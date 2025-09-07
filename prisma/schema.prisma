@@ -8,26 +8,51 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String?  @db.VarChar(255)
-  email     String   @unique(map: "email") @db.VarChar(255)
-  password  String?  @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int          @id @default(autoincrement())
+  name       String?      @db.VarChar(255)
+  email      String       @unique(map: "email") @db.VarChar(255)
+  password   String?      @db.VarChar(255)
+  role       String?      @db.VarChar(255)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Peminjaman Peminjaman[]
 
   @@map("users")
 }
 
 model Buku {
-  id        Int      @id @default(autoincrement())
-  judul     String?  @db.VarChar(255)
-  penulis   String   @db.VarChar(255)
-  penerbit  String?  @db.VarChar(255)
-  tahun     Int?
-  kategori  String?  @db.VarChar(255)
-  stok      Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int          @id @default(autoincrement())
+  judul      String?      @db.VarChar(255)
+  penulis    String       @db.VarChar(255)
+  penerbit   String?      @db.VarChar(255)
+  tahun      Int?
+  kategori   String?      @db.VarChar(255)
+  stok       Int          @default(0)
+  status     StatusBuku   @default(tersedia)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Peminjaman Peminjaman[]
 
   @@map("buku")
+}
+
+enum StatusBuku {
+  tersedia
+  dipinjam
+}
+
+model Peminjaman {
+  id                   Int       @id @default(autoincrement())
+  id_buku              Int
+  id_user              Int
+  tanggal_peminjaman   DateTime  @default(now())
+  tanggal_pengembalian DateTime?
+
+  // relasi ke tabel buku
+  buku Buku @relation(fields: [id_buku], references: [id])
+
+  // relasi ke tabel users
+  users User @relation(fields: [id_user], references: [id])
+
+  @@map("peminjaman")
 }

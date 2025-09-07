@@ -38,6 +38,7 @@ const login = async (req, res) => {
         name: true,
         email: true,
         password: true,
+        role: true,
       },
     });
 

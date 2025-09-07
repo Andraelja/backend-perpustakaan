@@ -11,6 +11,7 @@ const findUsers = async (req, res) => {
         id: true,
         name: true,
         email: true,
+        role: true,
       },
       orderBy: {
         id: "desc",
@@ -49,6 +50,7 @@ const createUser = async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
+        role: req.body.role,
       },
     });
 
@@ -61,6 +63,7 @@ const createUser = async (req, res) => {
     return res.status(500).send({
       success: false,
       message: "Internal server error!",
+      error: error.message,
     });
   }
 };
@@ -78,6 +81,7 @@ const findUserById = async (req, res) => {
         id: true,
         name: true,
         email: true,
+        role: true,
       },
     });
 
@@ -119,6 +123,7 @@ const updateUser = async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
+        role: req.body.role,
       },
     });
 
@@ -158,4 +163,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { findUsers, createUser, findUserById, updateUser, deleteUser };
+module.exports = {
+  findUsers,
+  createUser,
+  findUserById,
+  updateUser,
+  deleteUser,
+};

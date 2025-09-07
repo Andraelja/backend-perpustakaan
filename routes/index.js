@@ -11,7 +11,8 @@ const verifyToken = require("../middlewares/auth");
 const registerController = require("../controllers/RegisterController");
 const loginController = require("../controllers/LoginController");
 const userController = require("../controllers/UserController");
-const bukuController = require("../controllers/BukuController")
+const bukuController = require("../controllers/BukuController");
+const peminjamanController = require('../controllers/Peminjaman Controller');
 
 //import validate register
 const { validateRegister, validateLogin } = require("../utils/validators/auth");
@@ -34,6 +35,10 @@ router.post("/admin/buku", bukuController.createBuku);
 router.get("/admin/buku/:id", bukuController.findBukuById);
 router.put("/admin/buku/:id", bukuController.updateBuku);
 router.delete("/admin/buku/:id", bukuController.deleteBuku);
+
+// peminjaman
+router.get("/admin/peminjaman", peminjamanController.findPeminjaman);
+router.post("/admin/peminjaman", peminjamanController.createPeminjaman);
 
 //export router
 module.exports = router;
