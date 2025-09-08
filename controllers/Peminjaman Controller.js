@@ -11,6 +11,7 @@ const findPeminjaman = async (req, res) => {
         id_user: true,
         tanggal_peminjaman: true,
         tanggal_pengembalian: true,
+        status: true,
         buku: {
           select: {
             judul: true,
@@ -73,6 +74,7 @@ const createPeminjaman = async (req, res) => {
           tanggal_pengembalian: req.body.tanggal_pengembalian
             ? new Date(req.body.tanggal_pengembalian)
             : null,
+          status: "BELUM_DIKEMBALIKAN",
         },
         include: {
           buku: {
@@ -201,10 +203,36 @@ const deletePeminjaman = async (req, res) => {
   }
 };
 
+const updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const peminjaman = await prisma.peminjaman.update({
+      where: {
+        id: Number(id),
+      },
+      data: { status },
+    });
+
+    return res.status(200).send({
+      success: true,
+      message: "Status berhasil diperbarui!",
+      data: peminjaman,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi kesalahan internal!",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   findPeminjaman,
   createPeminjaman,
   findPeminjamById,
   updatePeminjaman,
   deletePeminjaman,
+  updateStatus
 };

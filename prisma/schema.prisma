@@ -42,11 +42,12 @@ enum StatusBuku {
 }
 
 model Peminjaman {
-  id                   Int       @id @default(autoincrement())
+  id                   Int              @id @default(autoincrement())
   id_buku              Int
   id_user              Int
-  tanggal_peminjaman   DateTime  @default(now())
+  tanggal_peminjaman   DateTime         @default(now())
   tanggal_pengembalian DateTime?
+  status               StatusPeminjaman @default(BELUM_DIKEMBALIKAN)
 
   // relasi ke tabel buku
   buku Buku @relation(fields: [id_buku], references: [id])
@@ -55,4 +56,9 @@ model Peminjaman {
   users User @relation(fields: [id_user], references: [id])
 
   @@map("peminjaman")
+}
+
+enum StatusPeminjaman {
+  BELUM_DIKEMBALIKAN
+  SUDAH_DIKEMBALIKAN
 }

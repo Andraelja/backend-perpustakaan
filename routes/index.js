@@ -42,6 +42,7 @@ router.post("/admin/peminjaman", peminjamanController.createPeminjaman);
 router.get("/admin/peminjaman/:id", peminjamanController.findPeminjamById);
 router.put("/admin/peminjaman/:id", peminjamanController.updatePeminjaman);
 router.delete("/admin/peminjaman/:id", peminjamanController.deletePeminjaman);
+router.put("/admin/peminjaman/updateStatus/:id", peminjamanController.updateStatus);
 
 //export router
 module.exports = router;
