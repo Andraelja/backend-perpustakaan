@@ -115,4 +115,96 @@ const createPeminjaman = async (req, res) => {
   }
 };
 
-module.exports = { findPeminjaman, createPeminjaman };
+const findPeminjamById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const peminjam = await prisma.peminjaman.findUnique({
+      where: {
+        id: Number(id),
+      },
+      select: {
+        id: true,
+        id_buku: true,
+        id_user: true,
+        tanggal_peminjaman: true,
+        tanggal_pengembalian: true,
+      },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: `Peminjam dengan id ${id} ditemukan!`,
+      data: peminjam,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Terjadi kesalahan internal!",
+      error: error.message,
+    });
+  }
+};
+
+const updatePeminjaman = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const peminjaman = await prisma.peminjaman.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        id_buku: parseInt(req.body.id_buku),
+        id_user: parseInt(req.body.id_user),
+        // tanggal_peminjaman: req.body.tanggal_peminjaman, (terisi otomatis)
+        tanggal_pengembalian: req.body.tanggal_pengembalian
+          ? new Date(req.body.tanggal_pengembalian)
+          : null,
+      },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Data berhasil diperbarui !",
+      data: peminjaman,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi kesalahan internal!",
+      error: error.message,
+    });
+  }
+};
+
+const deletePeminjaman = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const peminjaman = await prisma.peminjaman.delete({
+      where: {
+        id: Number(id),
+      },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Data berhasil dihapus!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Terjadi kesalahan internal!",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  findPeminjaman,
+  createPeminjaman,
+  findPeminjamById,
+  updatePeminjaman,
+  deletePeminjaman,
+};

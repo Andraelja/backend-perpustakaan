@@ -39,6 +39,9 @@ router.delete("/admin/buku/:id", bukuController.deleteBuku);
 // peminjaman
 router.get("/admin/peminjaman", peminjamanController.findPeminjaman);
 router.post("/admin/peminjaman", peminjamanController.createPeminjaman);
+router.get("/admin/peminjaman/:id", peminjamanController.findPeminjamById);
+router.put("/admin/peminjaman/:id", peminjamanController.updatePeminjaman);
+router.delete("/admin/peminjaman/:id", peminjamanController.deletePeminjaman);
 
 //export router
 module.exports = router;
