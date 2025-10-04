@@ -1,5 +1,8 @@
 const express = require("express");
-
+const path = require("path");
+const crypto = require("crypto");
+const { error } = require("console");
+const fs = require("fs");
 const prisma = require("../prisma/client");
 
 const findBuku = async (req, res) => {
@@ -36,7 +39,38 @@ const findBuku = async (req, res) => {
 };
 
 const createBuku = async (req, res) => {
+  if (!req.files || !req.files.foto) {
+    return res.status(400).json({ message: "Foto tidak ditemukan!" });
+  }
+
+  const foto = req.files.foto;
+  const ukuranFoto = foto.data.length;
+  const ext = path.extname(foto.name);
+  const unikKarakter = crypto.randomBytes(3).toString("hex");
+  const namaFoto = unikKarakter + foto.md5 + ext;
+  const fotoUrl = `${req.protocol}://${req.get("host")}/images/${namaFoto}`;
+  const tipeFoto = [".png", ".jpg", ".jpeg"];
+
+  if (!tipeFoto.includes(ext.toLowerCase())) {
+    return res.status(400).json({
+      message: "Tipe foto tidak sesuai! Harus png, jpg atau jpeg!",
+    });
+  }
+
+  if (ukuranFoto > 5000000) {
+    return res.status(400).json({
+      message: "Ukuran foto terlalu besar! Maksimal 5mb!",
+    });
+  }
+
   try {
+    await new Promise((resolve, reject) => {
+      foto.mv(`./public/images/${namaFoto}`, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
     const buku = await prisma.buku.create({
       data: {
         judul: req.body.judul,
@@ -45,7 +79,7 @@ const createBuku = async (req, res) => {
         tahun: req.body.tahun ? new Date(req.body.tahun).getFullYear() : null,
         kategori: req.body.kategori,
         deskripsi: req.body.deskripsi,
-        foto: req.body.foto,
+        foto: fotoUrl,
         stok: req.body.stok ? Number(req.body.stok) : 0,
         status: req.body.status || "tersedia",
       },
@@ -57,9 +91,17 @@ const createBuku = async (req, res) => {
       data: buku,
     });
   } catch (error) {
+    console.error("Error createBuku:", error);
+
+    const filePath = `./public/images/${namaFoto}`;
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
     res.status(500).send({
       success: false,
       message: "Terjadi kesalahan internal!",
+      error: error.message,
     });
   }
 };
@@ -101,6 +143,48 @@ const updateBuku = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // cek data lama
+    const fotoLama = await prisma.buku.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!fotoLama) {
+      return res.status(404).json({ message: "Data tidak ditemukan!" });
+    }
+
+    let fotoUrl = fotoLama.foto; // default pakai foto lama
+
+    if (req.files && req.files.foto) {
+      const fotoBaru = req.files.foto;
+      const ukuranFoto = fotoBaru.data.length;
+      const ext = path.extname(fotoBaru.name);
+      const unikKarakter = crypto.randomBytes(3).toString("hex");
+      const namaFoto = unikKarakter + fotoBaru.md5 + ext;
+      fotoUrl = `${req.protocol}://${req.get("host")}/images/${namaFoto}`;
+      const tipeFoto = [".png", ".jpg", ".jpeg"];
+
+      if (!tipeFoto.includes(ext.toLowerCase())) {
+        return res.status(400).json({
+          message: "Tipe foto tidak sesuai! Harus png, jpg atau jpeg!",
+        });
+      }
+
+      if (ukuranFoto > 5000000) {
+        return res.status(400).json({
+          message: "Ukuran foto terlalu besar! Maksimal 5mb!",
+        });
+      }
+
+      // hapus file lama kalau ada
+      const oldPath = `./public/images/${path.basename(fotoLama.foto)}`;
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+
+      fotoBaru.mv(`./public/images/${namaFoto}`, (error) => {
+        if (error) return res.status(500).json({ message: error.message });
+      });
+    }
     const buku = await prisma.buku.update({
       where: {
         id: Number(id),
@@ -112,7 +196,7 @@ const updateBuku = async (req, res) => {
         tahun: req.body.tahun ? new Date(req.body.tahun).getFullYear() : null,
         kategori: req.body.kategori,
         deskripsi: req.body.deskripsi,
-        foto: req.body.foto,
+        foto: fotoUrl,
         stok: req.body.stok ? Number(req.body.stok) : 0,
       },
     });
