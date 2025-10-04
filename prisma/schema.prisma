@@ -27,6 +27,8 @@ model Buku {
   penerbit   String?      @db.VarChar(255)
   tahun      Int?
   kategori   String?      @db.VarChar(255)
+  deskripsi  String?      @db.VarChar(255)
+  foto       String?      @db.VarChar(255)
   stok       Int          @default(0)
   status     StatusBuku   @default(tersedia)
   createdAt  DateTime     @default(now())
