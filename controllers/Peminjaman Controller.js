@@ -65,42 +65,41 @@ const createPeminjaman = async (req, res) => {
       });
     }
 
-    const peminjaman = await prisma.$transaction(async (tx) => {
-      const newPeminjaman = await tx.peminjaman.create({
-        data: {
-          id_buku: parseInt(req.body.id_buku),
-          id_user: parseInt(req.body.id_user),
-          // tanggal_peminjaman: req.body.tanggal_peminjaman, (terisi otomatis)
-          tanggal_pengembalian: req.body.tanggal_pengembalian
-            ? new Date(req.body.tanggal_pengembalian)
-            : null,
-          status: "BELUM_DIKEMBALIKAN",
-        },
-        include: {
-          buku: {
-            select: {
-              judul: true,
-            },
-          },
-          users: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
+    const jumlahDipinjam = await prisma.peminjaman.count({
+      where: {
+        id_buku: idBuku,
+        status: "BELUM_DIKEMBALIKAN",
+      },
+    });
 
-      await tx.buku.update({
-        where: {
-          id: idBuku,
-        },
-        data: {
-          stok: {
-            decrement: 1,
+    if (jumlahDipinjam >= buku.stok) {
+      return res.status(400).send({
+        success: false,
+        message: "Semua buku sedang dipinjam!",
+      });
+    }
+
+    const peminjaman = await prisma.peminjaman.create({
+      data: {
+        id_buku: parseInt(req.body.id_buku),
+        id_user: parseInt(req.body.id_user),
+        tanggal_pengembalian: req.body.tanggal_pengembalian
+          ? new Date(req.body.tanggal_pengembalian)
+          : null,
+        status: "BELUM_DIKEMBALIKAN",
+      },
+      include: {
+        buku: {
+          select: {
+            judul: true,
           },
         },
-      });
-      return newPeminjaman;
+        users: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     return res.status(201).send({
@@ -159,7 +158,6 @@ const updatePeminjaman = async (req, res) => {
       data: {
         id_buku: parseInt(req.body.id_buku),
         id_user: parseInt(req.body.id_user),
-        // tanggal_peminjaman: req.body.tanggal_peminjaman, (terisi otomatis)
         tanggal_pengembalian: req.body.tanggal_pengembalian
           ? new Date(req.body.tanggal_pengembalian)
           : null,
@@ -184,7 +182,7 @@ const deletePeminjaman = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const peminjaman = await prisma.peminjaman.delete({
+    await prisma.peminjaman.delete({
       where: {
         id: Number(id),
       },
